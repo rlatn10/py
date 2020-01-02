@@ -1,0 +1,58 @@
+class Stack:
+    def __init__(self):        #파이썬 메서드 이름으로 __init__ 을 사용하면 이 메서드는 생성자가 됨 = 객체가 생성되는 시점에 자동으로 호출됨
+        self.data = []         #리스트 자료형으로 만들어준다.
+
+    def empty(self):               #데이터가 비어있는지 확인함
+        return len(self.data) == 0    #리스트의 길이가 0이라는건 비어있다는 것
+
+    def push(self, item):          #push 데이터를 집어넣음
+        self.data.append(item)     #append(e)는 리스트의 맨 마지막에 e를 추가하는 함수
+
+    def pop(self):                 #데이터를 뽑아옴 (원본이 삭제됨)
+        return self.data.pop()     #pop()은 리스트의 맨 마지막 요소를 돌려주고 그 요소는 삭제
+
+    def copy(self):                #데이터를 복사해옴(원본이 유지됨)
+        return self.data[-1]       # a[-1]은 리스트 a의 마지막 요솟값을 말함 그 값을 return하니 마지막 요소값을 복사해오게됨
+
+priority = {'*': 3, '/': 3,        #딕셔너리 자료형을 통해 연산자에 우선순위를 부여함
+            '+': 2, '-': 2,
+            '(': 1}
+expr = []                        #입력받은 수식에서 띄어쓰기를 없앤 식 = 중위표현식
+operator = Stack()               #연산자를 저장할 스택
+result = []                      #결과가 저장될 리스트
+tmp = input("식을 입력하세요: ")   #계산해야할 수식을 tmp로 읽어온 후
+
+for i in tmp:            #식을 입력할때 띄어쓰기가 들어올수 있기 때문에 띄어쓰기를 없애서 expr에 저장함
+    if i == ' ':
+        continue      #for문을 수행하는 도중에 continue를 만나면 for문의 처음으로 돌아감
+    expr.append(i)    #expr에 ' ' 즉 띄어쓰기 였을시는 continue를 통해 처음으로 돌아가서 추가하지 못함 즉, 띄어쓰기를 없애서 expr에 저장함
+
+for i in expr:           #열린 괄호는 무조건 스택에 push함
+    if i == '(':
+        operator.push(i)
+
+    elif i in '+-*/':            #연산자의 경우에는 오퍼레이터 스택이 비어있으면 넣고
+        if operator.empty():
+            operator.push(i)
+        else:
+            if priority[operator.copy()] >= priority[i]:      #스택의 가장 위에 있는 연산자의 우선순위가 높거나 같다면
+                result.append(operator.pop())                 #해당 연산자를 뽑아와서 결과 리스트에 넘기고 나서 스택에 집어넣음
+                operator.push(i)
+            else:
+                operator.push(i)
+
+    elif i == ')':                     #닫는 괄호를 만나게 되면 스택안의 여는 괄호를 만날때까지 연산자를 계속 뽑아서 결과 리스트에 넘김
+        while True:
+            expr = operator.pop()
+            if expr == '(':
+                break
+            result.append(expr)
+    else:                              #토큰이 피연산자라면 바로 결과 리스트에 넘김
+        result.append(i)
+
+while not (operator.empty()):       #중위표현식 전체를 다 넘겼다면 스택에 있는 나머지 연산자를 모두 결과 리스트에 넘김
+    result.append(operator.pop())
+
+print(result)
+print(''.join(result))   #",".join('abcd')는 abcd사이에 ,를 넣는 함수이다 join함수를 이용해서 후위표기법으로 변경한 리스트 형태인 result를 사이에 아무것도 넣지않고 문자의 나열형태로 바꾼다
+#3*4+3*6*(3+5) 34*36*35+*+
